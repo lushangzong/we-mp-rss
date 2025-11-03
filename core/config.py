@@ -171,5 +171,5 @@ def save_config():
     
 DEBUG=cfg.get("debug",False)
 APP_NAME=cfg.get("app_name","we-mp-rss")
-from core.ver import VERSION,API_BASE
+from core.base import *
 print(f"名称:{APP_NAME}\n版本:{VERSION} API_BASE:{API_BASE}")

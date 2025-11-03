@@ -1,10 +1,8 @@
 echo off
 chcp 65001
-for /f "tokens=1 delims==" %%v in ('python -c "from core.ver import VERSION; print(VERSION)"') do set VERSION=%%v
-set tag="v%VERSION%"
 set VERSION=latest
 set platform=linux/amd64,linux/arm64
-echo 当前版本: %VERSION% TAG: %tag%
+echo 当前版本: %VERSION%
 set name=we-mp-rss:%VERSION%
 
 REM 检查并创建 buildx builder
@@ -36,6 +34,6 @@ docker run -d --name we-mp-rss  -p 8002:8001 -v %~dp0:/work %name%
 
 if "%1"=="-p" (
     echo 推送多架构镜像到仓库...
-    docker buildx build --platform %platform% -t ghcr.io/rachelos/%name% --push .
+    docker buildx build --platform %platform% -t ghcr.io/rachelos/%name% --push --insecure .
     docker image ls
 )

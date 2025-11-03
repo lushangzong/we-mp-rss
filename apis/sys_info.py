@@ -18,7 +18,7 @@ _START_TIME = time.time()
 async def get_base_info() -> Dict[str, Any]:
     try:
         from .ver import API_VERSION
-        from core.ver import VERSION as CORE_VERSION,LATEST_VERSION
+        from core.config import VERSION as CORE_VERSION,LATEST_VERSION
         base_info = {
             'api_version': API_VERSION,
             'core_version': CORE_VERSION,
@@ -59,7 +59,7 @@ async def system_resources(
         )
 from core.article_lax import ARTICLE_INFO,laxArticle
 from .ver import API_VERSION
-from core.ver import VERSION as CORE_VERSION,LATEST_VERSION
+from core.base import VERSION as CORE_VERSION,LATEST_VERSION
 @router.get("/info", summary="获取系统信息")
 async def get_system_info(
     current_user: dict = Depends(get_current_user)

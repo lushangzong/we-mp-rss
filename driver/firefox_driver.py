@@ -49,6 +49,10 @@ class FirefoxController:
         import requests
         from tqdm import tqdm
         
+        # 针对 Linux ARM64 架构的特殊处理
+        if self.system == "linux" and platform.machine() == "aarch64":
+            url = url.replace("geckodriver", "geckodriver-arm64")
+            
         response = requests.get(url, stream=True)
         response.raise_for_status()
         
@@ -178,6 +182,9 @@ class FirefoxController:
             # macOS系统添加架构后缀
             arch_suffix = "_arm64" if platform.machine() == "arm64" else "_intel"
             driver_name = f"geckodriver{arch_suffix}"
+        elif self.system == "linux" and platform.machine() == "aarch64":
+            # Linux ARM架构
+            driver_name = "geckodriver_arm64"
         else:
             driver_name = "geckodriver"
         return os.path.join(os.path.dirname(__file__), "driver", driver_name)
@@ -195,6 +202,10 @@ class FirefoxController:
             # 使用阿里云镜像源配置
             os.environ['WDM_SSL_VERIFY'] = '0'
             os.environ['WDM_LOCAL'] = '1'
+            # 针对 Linux ARM64 架构的特殊处理
+            if self.system == "linux" and platform.machine() == "aarch64":
+                os.environ['WDM_PLATFORM'] = 'linux64'
+                os.environ['WDM_ARCH'] = 'arm64'
             
             # 尝试从华为云镜像直接下载
             try:

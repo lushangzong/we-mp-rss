@@ -38,11 +38,12 @@ RUN ln -s /usr/local/bin/python3.13 /usr/local/bin/python3 \
 RUN ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
 
 # 根据架构安装不同的 Firefox 包
-RUN apt update && \
+RUN apt update --fix-missing || apt update --fix-missing && \
     if [ "$TARGETARCH" = "arm64" ]; then \
-        apt install -y --no-install-recommends firefox-esr; \
+        # 对于 arm64 架构，尝试安装 firefox 或使用其他浏览器
+        apt install -y --no-install-recommends --fix-missing firefox || echo "Firefox not available for arm64, skipping..."; \
     else \
-        apt install -y --no-install-recommends firefox; \
+        apt install -y --no-install-recommends --fix-missing firefox; \
     fi && \
     apt install -y git && \
     apt clean && apt autoremove -y && rm -rf /var/lib/apt/lists/*

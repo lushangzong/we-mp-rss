@@ -601,15 +601,28 @@ class WeChatAPI:
             print(first_biz_item)
             # 解析账号信息（需要根据实际页面结构调整）
             account_info = {
-                'wx_app_name': '公众号名称',
-                'wx_logo': '',
+                'wx_app_name': first_biz_item.get('username',''),
+                'wx_logo': first_biz_item.get('headimgurl',''),
                 'wx_read_yesterday': 0,
                 'wx_share_yesterday': 0,
                 'wx_watch_yesterday': 0,
                 'wx_yuan_count': 0,
                 'wx_user_count': 0
             }
-            
+            from driver.cookies import expire
+            login_data = {
+                            'cookies': self.cookies,
+                            'cookies_str': self._format_cookies_string(),
+                            'token': self.token,
+                            'wx_login_url': self.qr_code_path,
+                            'expiry': {
+                                "expiry_time":expire(self.cookies_dict),
+                                "expiry_time_stamp":expire(self.cookies_dict)
+                            }
+            }
+            set_token(login_data,account_info)
+            if self.login_callback:
+                self.login_callback(login_data, account_info)
             return account_info
             
         except Exception as e:
@@ -668,7 +681,7 @@ class WeChatAPI:
             # 解析JSON响应
             result = response.json()
             if 'base_resp' in result and result['base_resp']['ret'] == 0:
-                logger.info(f"获取账号列表成功: {result}")
+                # logger.info(f"获取账号列表成功: {result}")
                 return result
             else:
                 logger.warning(f"获取账号列表失败: {result['base_resp']}")
@@ -714,26 +727,11 @@ class WeChatAPI:
                
                 if 'home' in response.url:
                     self.is_logged_in = True
-                      # 调用成功回调
-                    if self.login_callback:
-                        from driver.cookies import expire
-                        ext_data=self._get_account_info()
-                        if ext_data is None:
-                            logger.warning("Token登录失败")
-                            return False
-                        login_data = {
-                            'cookies': self.cookies,
-                            'cookies_str': self._format_cookies_string(),
-                            'token': self.token,
-                            'wx_login_url': self.qr_code_path,
-                            'expiry': {
-                                "expiry_time":expire(self.cookies_dict),
-                                "expiry_time_stamp":expire(self.cookies_dict)
-                            }
-                        }
-                        set_token(login_data,ext_data)
-                        self.login_callback(login_data, ext_data)
-                        logger.info("Token登录成功")
+                    ext_data=self._get_account_info()
+                    if ext_data is None:
+                        logger.warning("Token登录失败")
+                        return False
+                    logger.info("Token登录成功")
                     return True
                 else:
                     logger.warning("Token登录失败")
