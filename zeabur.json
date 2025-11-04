@@ -1,11 +1,36 @@
 {
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
+  "serverless": {
+    "regions": ["hkg", "sfo", "nrt", "fra", "syd"]
+  },
   "routes": [
     {
       "src": "/feed/(.*)",
       "headers": {
-        "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+        "Cache-Control": "no-cache, no-store, must-revalidate, max-age=0, proxy-revalidate",
         "Pragma": "no-cache",
-        "Expires": "0"
+        "Expires": "0",
+        "ETag": ""
+      }
+    },
+    {
+      "src": "/rss/(.*)",
+      "headers": {
+        "Cache-Control": "no-cache, no-store, must-revalidate, max-age=0, proxy-revalidate",
+        "Pragma": "no-cache",
+        "Expires": "0",
+        "ETag": ""
+      }
+    },
+    {
+      "src": "/rss",
+      "headers": {
+        "Cache-Control": "no-cache, no-store, must-revalidate, max-age=0, proxy-revalidate",
+        "Pragma": "no-cache",
+        "Expires": "0",
+        "ETag": ""
       }
     }
   ]
