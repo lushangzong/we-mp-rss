@@ -643,5 +643,4 @@ class WXArticleFetcher:
             print_error(f"生成 PDF 失败: {str(e)}")
 
     
->>>>>>> 837cffa782f65f770aeeb8ceac670f5436f14c8e
 Web=WXArticleFetcher()
