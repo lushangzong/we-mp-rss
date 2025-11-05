@@ -65,19 +65,28 @@ async def rss_no_cache(request: Request, call_next):
     resp = await call_next(request)
     p = request.url.path
 
+    # 仅对 RSS 路径生效，避免影响其它 API/静态资源
     if p.startswith("/feed") or p.startswith("/rss") or p.endswith((".xml", ".rss", ".atom")):
-        # 让阅读器按 RSS 解析
-        resp.media_type = "application/rss+xml; charset=utf-8"
+        # 明确告知为 RSS
+        resp.headers["Content-Type"] = "application/rss+xml; charset=utf-8"
 
-        # 彻底禁缓存，避免 304 / 客户端命中旧副本
+        # 彻底禁缓存，避免 304 / CDN 命中
         resp.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0"
         resp.headers["Pragma"] = "no-cache"
         resp.headers["Expires"] = "0"
-        # 保险：移除条件缓存相关头
-        resp.headers.pop("ETag", None)
-        resp.headers.pop("Last-Modified", None)
+
+        # 移除可能由上游中间件加的条件缓存头（用 del，别用 pop）
+        try:
+            del resp.headers["ETag"]
+        except KeyError:
+            pass
+        try:
+            del resp.headers["Last-Modified"]
+        except KeyError:
+            pass
 
     return resp
+
 
 
 # 创建API路由分组
