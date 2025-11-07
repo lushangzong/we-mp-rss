@@ -4,6 +4,7 @@ set VERSION=latest
 set platform=linux/amd64,linux/arm64
 echo 当前版本: %VERSION%
 set name=we-mp-rss:%VERSION%
+
 if "%1"=="-test" (
 docker stop we-mp-rss
 docker stop we-mp-rss-arm
@@ -11,6 +12,8 @@ docker rm we-mp-rss
 docker rm we-mp-rss-arm
 docker run -d --name we-mp-rss --platform linux/amd64 -p 8002:8001 -v %~dp0:/work %name%
 docker run -d --name we-mp-rss-arm --platform linux/arm64 -p 8003:8001 -v %~dp0:/work %name%
+docker exec -it we-mp-rss /bin/bash
+docker stop we-mp-rss
 goto :eof
 )
 REM 检查并创建 buildx builder
@@ -35,11 +38,7 @@ FOR /f "tokens=*" %%i IN ('docker ps -q') DO docker stop %%i
 docker container prune -f
 docker image prune -f
 docker image ls
-REM 运行容器 (使用本地架构)
-docker run -d --name we-mp-rss -platform linux/amd64 -p 8002:8001 -v %~dp0:/work %name%
-docker run -d --name we-mp-rss-arm --platform linux/arm64 -p 8003:8001 -v %~dp0:/work %name%
-@REM docker exec -it we-mp-rss /bin/bash
-@REM docker stop we-mp-rss
+
 
 if "%1"=="-p" (
     echo 推送多架构镜像到仓库...

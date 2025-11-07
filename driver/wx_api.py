@@ -4,9 +4,11 @@
 提供二维码登录、token管理、cookie管理等功能
 """
 import os
+import traceback
 import time
 import json
 import base64
+from attr import s
 import requests
 from typing import Optional, Dict, Any, Callable
 from threading import Lock, Timer
@@ -30,6 +32,7 @@ class WeChatAPI:
         self.login_url = f"{self.base_url}/"
         self.home_url = f"{self.base_url}/cgi-bin/home"
         # 状态管理
+        self._islogin=False
         self.is_logged_in = False
         self.fingerprint = self._generate_uuid()
         self.session = requests.Session()
@@ -363,8 +366,8 @@ class WeChatAPI:
             try:
                 # 检查登录状态
                 status = self._check_login_status(uuid)
-                
                 if status == 'success':
+                    self._islogin=True
                     self._handle_login_success()
                 elif status == 'waiting':
                     # 继续等待
@@ -457,7 +460,7 @@ class WeChatAPI:
                 
                 # 清理二维码文件
                 self._clean_qr_code()
-                
+                from driver.cookies import expire
                 # 调用成功回调
                 if self.login_callback:
                     login_data = {
@@ -465,15 +468,14 @@ class WeChatAPI:
                         'cookies_str': self._format_cookies_string(),
                         'token': self.token,
                         'wx_login_url': self.qr_code_path,
-                        'expiry': self._calculate_expiry()
+                        'expiry':  expire(self.cookies_dict)
                     }
-                    self.login_callback(login_data, self._get_account_info())
-                
+                self._get_account_info()
                 logger.info("登录成功！")
                 
         except Exception as e:
-            logger.error(f"处理登录成功失败: {str(e)}")
-            raise e
+            logger.error(f"处理登录失败: {str(e)}")
+            traceback.print_exc()
 
     def _extract_login_info(self):
         """
@@ -574,18 +576,21 @@ class WeChatAPI:
         except Exception as e:
             logger.error(f"计算过期时间失败: {str(e)}")
             return None
-    def get_cookie_expires(self,cookies: dict):
+    def get_cookie_expires(self,cookies):
         try:
-            cookie_info = []
+            # 将cookie转换为字典
+            cookies_dict =[]
             for cookie in cookies:
-                if cookie.expires is not None:
-                    cookie_info.append((cookie.name, cookie.value, cookie.expires))
-                else:
-                    cookie_info.append((cookie.name, cookie.value, "No expires attribute"))
-            return cookie_info
+                if cookie.expires:
+                    expiry_time = cookie.expires
+                    cookies_dict.append({
+                        'name': cookie.name,
+                        'value': cookie.value,
+                        'expires': expiry_time
+                    })
         except requests.exceptions.RequestException as e:
             logger.error(f"获取cookie过期时间失败: {str(e)}")   
-            return f"An error occurred: {e}"
+        return cookies_dict
         
     def _get_account_info(self) -> Optional[Dict[str, Any]]:
         """
@@ -619,15 +624,13 @@ class WeChatAPI:
                 'wx_user_count': 0
             }
             from driver.cookies import expire
+            # 将cookie转换为字典
             login_data = {
                             'cookies': self.cookies,
                             'cookies_str': self._format_cookies_string(),
                             'token': self.token,
                             'wx_login_url': self.qr_code_path,
-                            'expiry': {
-                                "expiry_time":expire(self.cookies_dict),
-                                "expiry_time_stamp":expire(self.cookies_dict)
-                            }
+                            'expiry': expire(self.cookies_dict)
             }
             set_token(login_data,account_info)
             if self.login_callback:
@@ -821,7 +824,7 @@ class WeChatAPI:
         return False
     
     def HasLogin(self):
-        return self.login_with_token() and not self.GetHasCode()
+        return self._islogin and not self.GetHasCode()
     def Close(self):
         pass
 # 创建全局实例

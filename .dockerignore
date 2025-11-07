@@ -1,0 +1,5 @@
+data/
+web_ui/
+Dockerfile/
+scripts/
+compose/

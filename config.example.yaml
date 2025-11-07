@@ -13,7 +13,10 @@ server:
    #代码修改自动重启服务，默认为False
    auto_reload: ${AUTO_RELOAD:-False}
    #最大线程数 默认2个线程，不建议超过4个线程
-   threads: ${THREADS:-4}
+   threads: ${THREADS:-2}
+   #通过web方式授权二维码 默认False 
+   auth_web: ${WERSS_AUTH_WEB:-False}
+
 
 #数据库连接 例如db:  mysql+pymysql://<username>:<password>@<host>/we-rss?charset=utf8mb4
 #PostgreSQL 连接示例: postgresql://<username>:<password>@<host>/<database>

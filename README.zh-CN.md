@@ -161,6 +161,7 @@ http://localhost:3000
 | `APP_NAME` | `we-mp-rss` | 应用名称 |
 | `SERVER_NAME` | `we-mp-rss` | 服务名称 |
 | `WEB_NAME` | `WeRSS微信公众号订阅助手` | 前端显示名称 |
+| `WERSS_AUTH_WEB` | `False` | 通过web方式授权 |
 | `SEND_CODE` | `True` | 是否发送授权二维码通知 |
 | `CODE_TITLE` | `WeRSS授权二维码` | 二维码通知标题 |
 | `ENABLE_JOB` | `True` | 是否启用定时任务 |

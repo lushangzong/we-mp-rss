@@ -1,5 +1,5 @@
 
-FROM  ghcr.io/rachelos/py3.13.1:latest
+FROM  ghcr.io/rachelos/base-mini:latest
 # 安装系统依赖
 WORKDIR /app
 

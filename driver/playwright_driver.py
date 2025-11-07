@@ -64,18 +64,6 @@ class PlaywrightController:
             raise Exception("浏览器未启动，请先调用 start_browser()")
         self.context.add_cookies([cookie])
 
-    def get_cookies(self, url=None):
-        """获取当前页面的cookies"""
-        if self.context is None:
-            raise Exception("浏览器未启动，请先调用 start_browser()")
-        
-        if url:
-            # 获取指定URL的cookies
-            return self.context.cookies(url)
-        else:
-            # 获取所有cookies
-            return self.context.cookies()
-
 
     def _get_anti_crawler_config(self, mobile_mode=False):
         """获取反爬虫配置"""

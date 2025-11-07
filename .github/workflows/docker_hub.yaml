@@ -2,8 +2,11 @@ name: Publish Docker image to Docker Hub
 
 on:
   push:
-    # branches: [ "main" ]
-    # tags: [ "v*" ]
+     branches:
+      - main
+     paths:  # 仅在指定文件变化时触发（可选）
+      - 'ReadMe.md'
+      - 'core/ver.py'
 
 env:
   REGISTRY: docker.io
