@@ -58,6 +58,36 @@ async def add_custom_header(request: Request, call_next):
     response.headers["GITHUB"] = "https://github.com/rachelos/we-mp-rss"
     response.headers["Server"] = cfg.get("app_name", "WeRSS")
     return response
+
+# —— RSS 禁缓存中间件（覆盖 /feed、/rss、.xml/.rss/.atom）——
+@app.middleware("http")
+async def rss_no_cache(request: Request, call_next):
+    resp = await call_next(request)
+    p = request.url.path
+
+    # 仅对 RSS 路径生效，避免影响其它 API/静态资源
+    if p.startswith("/feed") or p.startswith("/rss") or p.endswith((".xml", ".rss", ".atom")):
+        # 明确告知为 RSS
+        resp.headers["Content-Type"] = "application/rss+xml; charset=utf-8"
+
+        # 彻底禁缓存，避免 304 / CDN 命中
+        resp.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0"
+        resp.headers["Pragma"] = "no-cache"
+        resp.headers["Expires"] = "0"
+
+        # 移除可能由上游中间件加的条件缓存头（用 del，别用 pop）
+        try:
+            del resp.headers["ETag"]
+        except KeyError:
+            pass
+        try:
+            del resp.headers["Last-Modified"]
+        except KeyError:
+            pass
+
+    return resp
+
+
 # 创建API路由分组
 api_router = APIRouter(prefix=f"{API_BASE}")
 api_router.include_router(auth_router)
@@ -104,4 +134,5 @@ async def serve_vue_app(request: Request, path: str):
 @app.get("/",tags=['默认'],include_in_schema=False)
 async def serve_root(request: Request):
     """处理根路由"""
+
     return await serve_vue_app(request, "")
